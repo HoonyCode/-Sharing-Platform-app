@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -49,8 +50,6 @@ public class HistoryActivity extends AppCompatActivity {
         Intent intent = getIntent();
         userId = intent.getStringExtra("id");
 
-        Log.e("FUCK", userId);
-
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,7 +63,7 @@ public class HistoryActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    URL url = new URL("http://192.168.1.97:8080/api/getUserShareRecord?ccp=share1&id="+userId);
+                    URL url = new URL(ServerAddress.getInstance().getServerURL() + "getUserShareRecord?ccp=share1&id="+userId);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET"); //전송방식 데이터 읽을 때는 GET, 데이터 쓸 때는 POST
                     connection.setDoOutput(false);       //데이터를 쓸 지 설정, GET 일때는 false
@@ -86,15 +85,15 @@ public class HistoryActivity extends AppCompatActivity {
                     result = sb.toString();
                     Log.e("result", result);
 
-                    /*JSONObject jsonObject = new JSONObject(result);
-                    JSONArray jsonArray = jsonObject.getJSONArray("Record");
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray jsonArray = jsonObject.getJSONArray("Place");
 
                     int index = 0;
                     while (index < jsonArray.length()) {
                         ShareRecord temp = gson.fromJson(jsonArray.get(index).toString(), ShareRecord.class);
                         records.add(temp);
                         index++;
-                    }*/
+                    }
                 } catch (Exception e) {
                     Log.e("ERROR", e.toString());
                 }
@@ -110,19 +109,23 @@ public class HistoryActivity extends AppCompatActivity {
         catch (Exception e){
             Log.e("ERRRR", e.toString());
         }
+
+        ItemAdapter myAdapter = new ItemAdapter();
+
+        listView.setAdapter(myAdapter);
+
     }
 
     class ItemAdapter extends BaseAdapter{
-        private ArrayList<ShareRecord> items = new ArrayList<>();
 
         @Override
         public int getCount(){
-            return items.size();
+            return records.size();
         }
 
         @Override
         public ShareRecord getItem(int position){
-            return items.get(position);
+            return records.get(position);
         }
 
         @Override
@@ -132,8 +135,23 @@ public class HistoryActivity extends AppCompatActivity {
 
         @Override
         public View getView(final int position, final View convertView, ViewGroup parent){
-            LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
-            View view = null;
+
+            LayoutInflater mLayoutInflater = LayoutInflater.from(getApplicationContext());
+
+            View view = mLayoutInflater.inflate(R.layout.list_item, null);
+
+            TextView type = view.findViewById(R.id.type);
+            TextView time = view.findViewById(R.id.time);
+            TextView address = view.findViewById(R.id.address);
+
+            if(records.get(position).getType().equals("start")){
+                type.setText("시작");
+            }else{
+                type.setText("종료");
+            }
+
+            time.setText(records.get(position).getTimestamp());
+            address.setText(records.get(position).getLocation());
 
             return view;
         }

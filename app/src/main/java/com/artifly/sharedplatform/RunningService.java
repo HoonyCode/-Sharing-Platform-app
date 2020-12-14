@@ -9,12 +9,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import static com.artifly.sharedplatform.MainActivity.Main_activity;
+
 public class RunningService extends Service {
     private NotificationManager notificationManager;
+    private String userId = "TEST";
+    private String target = "1";
 
     @Nullable
     @Override
@@ -25,7 +30,8 @@ public class RunningService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        startForegroundService();
+
+        Log.e("11111", "oncreate");
     }
 
     @Override
@@ -34,8 +40,30 @@ public class RunningService extends Service {
         stopForeground(true);
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        Log.e("check", "onStartCommand() called");
+
+        if (intent == null) {
+            return Service.START_STICKY;
+        } else {
+            userId = intent.getStringExtra("id");
+            target = intent.getStringExtra("target");
+            Log.e("check", "전달받은 데이터: " + userId + target);
+        }
+
+        startForegroundService();
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
     public void startForegroundService(){
+        Log.e("2222222", "service");
+
         Intent notificationIntent = new Intent(this, RunningActivity.class);
+        notificationIntent.putExtra("id", userId);
+        notificationIntent.putExtra("target", target);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);

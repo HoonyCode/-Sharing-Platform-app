@@ -10,9 +10,12 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -125,6 +128,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if(isServiceRunningCheck()){
             Intent run = new Intent(MainActivity.this, RunningActivity.class);
+
+            SharedPreferences preferences = getSharedPreferences("id", MODE_PRIVATE);
+            run.putExtra("id", preferences.getString("id", "NONE"));
+            run.putExtra("target", preferences.getString("target", "NONE"));
 
             finish();
             startActivity(run);
@@ -867,7 +874,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void run() {
                 try {
-                    URL url = new URL("http://192.168.1.97:8080/api/getAllPlace?ccp=share1");
+                    URL url = new URL(ServerAddress.getInstance().getServerURL() + "getAllPlace?ccp=share1");
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET"); //전송방식 데이터 읽을 때는 GET, 데이터 쓸 때는 POST
                     connection.setDoOutput(false);       //데이터를 쓸 지 설정, GET 일때는 false
@@ -938,5 +945,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
         return false;
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        if(isServiceRunningCheck()){
+            Intent run = new Intent(MainActivity.this, RunningActivity.class);
+
+            SharedPreferences preferences = getSharedPreferences("id", MODE_PRIVATE);
+            run.putExtra("id", preferences.getString("id", "NONE"));
+            run.putExtra("target", preferences.getString("target", "NONE"));
+
+            finish();
+            startActivity(run);
+        }
     }
 }
